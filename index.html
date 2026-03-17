@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>運將避雷針 App</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f39c12">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <style>
+        /* 這裡延用之前的 CSS，為了簡潔我省略重複部分，但建議加入以下這行讓它更像 App */
+        body { -webkit-tap-highlight-color: transparent; user-select: none; }
+        .container { max-width: 500px; margin: auto; padding: 20px; padding-bottom: 80px; }
+        .fab { position: fixed; bottom: 20px; right: 20px; background: #f39c12; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🚕 運將評鑑系統</h2>
+    <div class="search-section">
+        <input type="text" id="searchInput" placeholder="🔍 輸入車牌搜尋..." onkeyup="filterReviews()" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
+    </div>
+    <div id="reviewList" style="margin-top:20px;">
+        </div>
+</div>
+
+<div class="fab" onclick="alert('開啟新增表單...')">+</div>
+
+<script>
+    // 註冊 Service Worker (PWA 的核心)
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+            .then(() => console.log("Service Worker 註冊成功"));
+    }
+
+    // 之前的 JS 邏輯 (filterReviews 等) 放在這裡...
+</script>
+</body>
+</html>
