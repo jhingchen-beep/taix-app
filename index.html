@@ -9,30 +9,34 @@
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px; }
         .container { max-width: 500px; margin: auto; }
-        h2 { text-align: center; color: #333; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
         
         /* 搜尋框 */
         .search-box { position: sticky; top: 10px; z-index: 100; background: white; padding: 10px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        input[type="text"], select, input[type="number"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        input[type="text"], select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
 
         /* 評論卡片 */
-        .review-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-left: 6px solid #f39c12; transition: 0.3s; }
+        .review-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-left: 6px solid #f39c12; }
         .review-card strong { font-size: 1.2em; color: #2c3e50; }
-        .rating { color: #f1c40f; margin-left: 5px; }
-        .tag { display: inline-block; background: #eee; padding: 3px 10px; border-radius: 20px; font-size: 12px; margin: 5px 5px 0 0; color: #666; }
-        .smoke-alert { color: #e74c3c; font-weight: bold; font-size: 13px; }
+        .rating-display { color: #f1c40f; font-size: 1.1em; margin-left: 5px; }
+        .tag { display: inline-block; background: #eee; padding: 4px 10px; border-radius: 20px; font-size: 12px; margin: 5px 5px 0 0; color: #666; }
+        .smoke-status { margin-top: 10px; font-size: 13px; font-weight: bold; }
 
         /* 懸浮按鈕 */
-        .fab { position: fixed; bottom: 30px; right: 30px; background: #f39c12; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4); cursor: pointer; z-index: 999; }
+        .fab { position: fixed; bottom: 30px; right: 30px; background: #f39c12; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4); cursor: pointer; z-index: 999; border: none; }
 
-        /* 彈出視窗 */
+        /* 彈出視窗 (Modal) */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; }
         .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 20px; position: relative; }
-        .modal-content h3 { margin-top: 0; color: #f39c12; }
+        .btn-close { background: none; border: none; color: #999; position: absolute; top: 15px; right: 15px; font-size: 24px; cursor: pointer; }
+        
+        /* 五星評分樣式 */
+        .star-rating { display: flex; gap: 5px; font-size: 32px; color: #ccc; cursor: pointer; margin: 10px 0; }
+        .star-rating span.active { color: #f1c40f; }
+        
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
-        .btn-submit { background: #f39c12; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 10px; }
-        .btn-close { background: none; border: none; color: #999; position: absolute; top: 15px; right: 15px; font-size: 20px; cursor: pointer; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #555; }
+        .btn-submit { background: #f39c12; color: white; border: none; width: 100%; padding: 14px; border-radius: 10px; font-size: 16px; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -45,60 +49,88 @@
     </div>
 
     <div id="reviewList">
-        <div class="review-card" data-plate="ABC-1234">
-            <strong>ABC-1234</strong> <span class="rating">⭐⭐⭐⭐⭐</span><br>
+        <div class="review-card" data-plate="ABC-8888">
+            <strong>ABC-8888</strong> <span class="rating-display">⭐⭐⭐⭐⭐</span><br>
             <span class="tag">駕駛：王大明</span>
             <span class="tag">風格：平穩舒適</span>
-            <span class="tag">整潔：5/5</span>
-            <div style="margin-top:8px;"><span style="color:green">🌿 無菸味</span></div>
+            <div class="smoke-status" style="color: green;">🌿 無菸味環境</div>
         </div>
     </div>
 </div>
 
-<div class="fab" onclick="openModal()">+</div>
+<button class="fab" onclick="openModal()">+</button>
 
 <div id="addModal" class="modal">
     <div class="modal-content">
         <button class="btn-close" onclick="closeModal()">×</button>
-        <h3>新增評價</h3>
+        <h3 style="color: #f39c12; margin-top: 0;">新增評價</h3>
+        
         <div class="form-group">
             <label>車牌號碼</label>
             <input type="text" id="plate" placeholder="例如: ABC-1234">
         </div>
+
         <div class="form-group">
-            <label>駕駛姓名</label>
-            <input type="text" id="name" placeholder="王小明">
+            <label>總體評分</label>
+            <div class="star-rating" id="starInput">
+                <span onclick="setStar(1)">★</span>
+                <span onclick="setStar(2)">★</span>
+                <span onclick="setStar(3)">★</span>
+                <span onclick="setStar(4)">★</span>
+                <span onclick="setStar(5)">★</span>
+            </div>
+            <input type="hidden" id="selectedRating" value="5">
         </div>
+
+        <div class="form-group">
+            <label>駕駛姓名 (選填)</label>
+            <input type="text" id="driverName" placeholder="王小明">
+        </div>
+
         <div class="form-group">
             <label>駕駛風格</label>
-            <select id="style">
+            <select id="driveStyle">
                 <option value="平穩舒適">平穩舒適</option>
                 <option value="開快車">開快車</option>
                 <option value="會鑽車">會鑽車</option>
                 <option value="急煞頻繁">急煞頻繁</option>
             </select>
         </div>
-        <div class="form-group">
-            <label>車內整潔 (1-5)</label>
-            <input type="number" id="clean" min="1" max="5" value="5">
+
+        <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="isSmoke" style="width: auto;">
+            <label for="isSmoke" style="margin: 0;">有煙味 🚭</label>
         </div>
-        <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
-            <input type="checkbox" id="smoke" style="width: auto;">
-            <label for="smoke" style="margin: 0;">有煙味 🚭</label>
-        </div>
-        <button class="btn-submit" onclick="submitNewReview()">提交評價</button>
+
+        <button class="btn-submit" onclick="submitReview()">提交評價</button>
     </div>
 </div>
 
 <script>
-    // 註冊 PWA Service Worker
+    // 註冊 PWA
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').then(() => console.log("PWA Ready"));
     }
 
-    // 開啟與關閉 Modal
-    function openModal() { document.getElementById('addModal').style.display = 'flex'; }
+    let currentStar = 5;
+
+    // 開關彈窗
+    function openModal() { 
+        document.getElementById('addModal').style.display = 'flex'; 
+        setStar(5); // 每次打開預設 5 星
+    }
     function closeModal() { document.getElementById('addModal').style.display = 'none'; }
+
+    // 設定星星
+    function setStar(n) {
+        currentStar = n;
+        document.getElementById('selectedRating').value = n;
+        const stars = document.querySelectorAll('#starInput span');
+        stars.forEach((s, i) => {
+            if (i < n) s.classList.add('active');
+            else s.classList.remove('active');
+        });
+    }
 
     // 搜尋功能
     function filterReviews() {
@@ -111,41 +143,49 @@
     }
 
     // 提交評價
-    function submitNewReview() {
+    function submitReview() {
         const plate = document.getElementById('plate').value.toUpperCase().trim();
-        const name = document.getElementById('name').value;
-        const style = document.getElementById('style').value;
-        const clean = document.getElementById('clean').value;
-        const smoke = document.getElementById('smoke').checked;
+        const name = document.getElementById('driverName').value || "未註名";
+        const style = document.getElementById('driveStyle').value;
+        const rating = document.getElementById('selectedRating').value;
+        const smoke = document.getElementById('isSmoke').checked;
 
-        if(!plate) { alert("請輸入車牌"); return; }
+        if(!plate) { alert("請輸入車牌！"); return; }
 
+        // 畫出星星圖案
+        const starsHtml = "⭐".repeat(rating);
+
+        // 新增卡片到列表
         const list = document.getElementById('reviewList');
         const card = document.createElement('div');
         card.className = 'review-card';
         card.setAttribute('data-plate', plate);
         
         card.innerHTML = `
-            <strong>${plate}</strong> <span class="rating">⭐⭐⭐⭐⭐</span><br>
-            <span class="tag">駕駛：${name || '未註名'}</span>
+            <strong>${plate}</strong> <span class="rating-display">${starsHtml}</span><br>
+            <span class="tag">駕駛：${name}</span>
             <span class="tag">風格：${style}</span>
-            <span class="tag">整潔：${clean}/5</span>
-            <div style="margin-top:8px;">${smoke ? '<span class="smoke-alert">🚨 有煙味</span>' : '<span style="color:green">🌿 無菸味</span>'}</div>
+            <div class="smoke-status" style="color: ${smoke ? '#e74c3c' : 'green'};">
+                ${smoke ? '🚨 有煙味環境' : '🌿 無菸味環境'}
+            </div>
         `;
 
         list.prepend(card);
+        
+        // 這裡可以加入 fetch() 到 Google 表單的代碼
+        console.log("資料已準備送出:", {plate, name, style, rating, smoke});
+
         closeModal();
         
-        // 重置欄位
+        // 清空欄位
         document.getElementById('plate').value = '';
-        document.getElementById('name').value = '';
-        document.getElementById('smoke').checked = false;
+        document.getElementById('driverName').value = '';
+        document.getElementById('isSmoke').checked = false;
     }
 
-    // 點擊 Modal 外部可關閉
-    window.onclick = function(event) {
-        let modal = document.getElementById('addModal');
-        if (event.target == modal) closeModal();
+    // 點擊背景關閉
+    window.onclick = function(e) {
+        if (e.target.className === 'modal') closeModal();
     }
 </script>
 
