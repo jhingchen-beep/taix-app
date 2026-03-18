@@ -1,47 +1,154 @@
-<div id="addModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000;">
-    <div style="background:white; width:90%; margin:20px auto; padding:20px; border-radius:15px; max-height:80vh; overflow-y:auto;">
-        <h3>新增評價</h3>
-        <label>車牌號碼</label>
-        <input type="text" id="plate" placeholder="ABC-1234" style="width:100%; margin-bottom:10px; padding:8px;">
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>運將評鑑系統</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f39c12">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: auto; }
+        h2 { text-align: center; color: #333; display: flex; align-items: center; justify-content: center; gap: 10px; }
         
-        <label>駕駛姓名</label>
-        <input type="text" id="name" placeholder="王小明" style="width:100%; margin-bottom:10px; padding:8px;">
-        
-        <label>駕駛風格</label>
-        <select id="style" style="width:100%; margin-bottom:10px; padding:8px;">
-            <option value="平穩舒適">平穩舒適</option>
-            <option value="開快車">開快車</option>
-            <option value="會鑽車">會鑽車</option>
-        </select>
+        /* 搜尋框 */
+        .search-box { position: sticky; top: 10px; z-index: 100; background: white; padding: 10px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input[type="text"], select, input[type="number"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
 
-        <label>是否有煙味 🚭</label>
-        <input type="checkbox" id="smoke"> 有
-        
-        <div style="margin-top:20px; display:flex; gap:10px;">
-            <button onclick="submitNewReview()" style="flex:1; background:#f39c12; color:white; border:none; padding:10px; border-radius:5px;">送出</button>
-            <button onclick="closeModal()" style="flex:1; background:#ccc; border:none; padding:10px; border-radius:5px;">取消</button>
+        /* 評論卡片 */
+        .review-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-left: 6px solid #f39c12; transition: 0.3s; }
+        .review-card strong { font-size: 1.2em; color: #2c3e50; }
+        .rating { color: #f1c40f; margin-left: 5px; }
+        .tag { display: inline-block; background: #eee; padding: 3px 10px; border-radius: 20px; font-size: 12px; margin: 5px 5px 0 0; color: #666; }
+        .smoke-alert { color: #e74c3c; font-weight: bold; font-size: 13px; }
+
+        /* 懸浮按鈕 */
+        .fab { position: fixed; bottom: 30px; right: 30px; background: #f39c12; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4); cursor: pointer; z-index: 999; }
+
+        /* 彈出視窗 */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 20px; position: relative; }
+        .modal-content h3 { margin-top: 0; color: #f39c12; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        .btn-submit { background: #f39c12; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 10px; }
+        .btn-close { background: none; border: none; color: #999; position: absolute; top: 15px; right: 15px; font-size: 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🚕 運將評鑑系統</h2>
+    
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="🔍 輸入車牌搜尋..." onkeyup="filterReviews()">
+    </div>
+
+    <div id="reviewList">
+        <div class="review-card" data-plate="ABC-1234">
+            <strong>ABC-1234</strong> <span class="rating">⭐⭐⭐⭐⭐</span><br>
+            <span class="tag">駕駛：王大明</span>
+            <span class="tag">風格：平穩舒適</span>
+            <span class="tag">整潔：5/5</span>
+            <div style="margin-top:8px;"><span style="color:green">🌿 無菸味</span></div>
         </div>
     </div>
 </div>
 
+<div class="fab" onclick="openModal()">+</div>
+
+<div id="addModal" class="modal">
+    <div class="modal-content">
+        <button class="btn-close" onclick="closeModal()">×</button>
+        <h3>新增評價</h3>
+        <div class="form-group">
+            <label>車牌號碼</label>
+            <input type="text" id="plate" placeholder="例如: ABC-1234">
+        </div>
+        <div class="form-group">
+            <label>駕駛姓名</label>
+            <input type="text" id="name" placeholder="王小明">
+        </div>
+        <div class="form-group">
+            <label>駕駛風格</label>
+            <select id="style">
+                <option value="平穩舒適">平穩舒適</option>
+                <option value="開快車">開快車</option>
+                <option value="會鑽車">會鑽車</option>
+                <option value="急煞頻繁">急煞頻繁</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>車內整潔 (1-5)</label>
+            <input type="number" id="clean" min="1" max="5" value="5">
+        </div>
+        <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+            <input type="checkbox" id="smoke" style="width: auto;">
+            <label for="smoke" style="margin: 0;">有煙味 🚭</label>
+        </div>
+        <button class="btn-submit" onclick="submitNewReview()">提交評價</button>
+    </div>
+</div>
+
 <script>
-    // 開啟表單
-    function openModal() {
-        document.getElementById('addModal').style.display = 'block';
+    // 註冊 PWA Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(() => console.log("PWA Ready"));
     }
 
-    // 關閉表單
-    function closeModal() {
-        document.getElementById('addModal').style.display = 'none';
+    // 開啟與關閉 Modal
+    function openModal() { document.getElementById('addModal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('addModal').style.display = 'none'; }
+
+    // 搜尋功能
+    function filterReviews() {
+        const query = document.getElementById('searchInput').value.toUpperCase();
+        const cards = document.getElementsByClassName('review-card');
+        for (let card of cards) {
+            const plate = card.getAttribute('data-plate');
+            card.style.display = plate.includes(query) ? "" : "none";
+        }
     }
 
-    // 將按鈕的 onclick 改為 openModal()
-    // <div class="fab" onclick="openModal()">+</div>
-
+    // 提交評價
     function submitNewReview() {
-        // 這裡放原本 addReview 的邏輯
-        // 成功後記得呼叫 closeModal()
-        alert("資料已準備送出！");
+        const plate = document.getElementById('plate').value.toUpperCase().trim();
+        const name = document.getElementById('name').value;
+        const style = document.getElementById('style').value;
+        const clean = document.getElementById('clean').value;
+        const smoke = document.getElementById('smoke').checked;
+
+        if(!plate) { alert("請輸入車牌"); return; }
+
+        const list = document.getElementById('reviewList');
+        const card = document.createElement('div');
+        card.className = 'review-card';
+        card.setAttribute('data-plate', plate);
+        
+        card.innerHTML = `
+            <strong>${plate}</strong> <span class="rating">⭐⭐⭐⭐⭐</span><br>
+            <span class="tag">駕駛：${name || '未註名'}</span>
+            <span class="tag">風格：${style}</span>
+            <span class="tag">整潔：${clean}/5</span>
+            <div style="margin-top:8px;">${smoke ? '<span class="smoke-alert">🚨 有煙味</span>' : '<span style="color:green">🌿 無菸味</span>'}</div>
+        `;
+
+        list.prepend(card);
         closeModal();
+        
+        // 重置欄位
+        document.getElementById('plate').value = '';
+        document.getElementById('name').value = '';
+        document.getElementById('smoke').checked = false;
+    }
+
+    // 點擊 Modal 外部可關閉
+    window.onclick = function(event) {
+        let modal = document.getElementById('addModal');
+        if (event.target == modal) closeModal();
     }
 </script>
+
+</body>
+</html>
+
