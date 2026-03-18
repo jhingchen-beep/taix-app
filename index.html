@@ -1,41 +1,47 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>運將避雷針 App</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#f39c12">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    
-    <style>
-        /* 這裡延用之前的 CSS，為了簡潔我省略重複部分，但建議加入以下這行讓它更像 App */
-        body { -webkit-tap-highlight-color: transparent; user-select: none; }
-        .container { max-width: 500px; margin: auto; padding: 20px; padding-bottom: 80px; }
-        .fab { position: fixed; bottom: 20px; right: 20px; background: #f39c12; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; }
-    </style>
-</head>
-<body>
+<div id="addModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000;">
+    <div style="background:white; width:90%; margin:20px auto; padding:20px; border-radius:15px; max-height:80vh; overflow-y:auto;">
+        <h3>新增評價</h3>
+        <label>車牌號碼</label>
+        <input type="text" id="plate" placeholder="ABC-1234" style="width:100%; margin-bottom:10px; padding:8px;">
+        
+        <label>駕駛姓名</label>
+        <input type="text" id="name" placeholder="王小明" style="width:100%; margin-bottom:10px; padding:8px;">
+        
+        <label>駕駛風格</label>
+        <select id="style" style="width:100%; margin-bottom:10px; padding:8px;">
+            <option value="平穩舒適">平穩舒適</option>
+            <option value="開快車">開快車</option>
+            <option value="會鑽車">會鑽車</option>
+        </select>
 
-<div class="container">
-    <h2>🚕 運將評鑑系統</h2>
-    <div class="search-section">
-        <input type="text" id="searchInput" placeholder="🔍 輸入車牌搜尋..." onkeyup="filterReviews()" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
-    </div>
-    <div id="reviewList" style="margin-top:20px;">
+        <label>是否有煙味 🚭</label>
+        <input type="checkbox" id="smoke"> 有
+        
+        <div style="margin-top:20px; display:flex; gap:10px;">
+            <button onclick="submitNewReview()" style="flex:1; background:#f39c12; color:white; border:none; padding:10px; border-radius:5px;">送出</button>
+            <button onclick="closeModal()" style="flex:1; background:#ccc; border:none; padding:10px; border-radius:5px;">取消</button>
         </div>
+    </div>
 </div>
 
-<div class="fab" onclick="alert('開啟新增表單...')">+</div>
-
 <script>
-    // 註冊 Service Worker (PWA 的核心)
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-            .then(() => console.log("Service Worker 註冊成功"));
+    // 開啟表單
+    function openModal() {
+        document.getElementById('addModal').style.display = 'block';
     }
 
-    // 之前的 JS 邏輯 (filterReviews 等) 放在這裡...
+    // 關閉表單
+    function closeModal() {
+        document.getElementById('addModal').style.display = 'none';
+    }
+
+    // 將按鈕的 onclick 改為 openModal()
+    // <div class="fab" onclick="openModal()">+</div>
+
+    function submitNewReview() {
+        // 這裡放原本 addReview 的邏輯
+        // 成功後記得呼叫 closeModal()
+        alert("資料已準備送出！");
+        closeModal();
+    }
 </script>
-</body>
-</html>
